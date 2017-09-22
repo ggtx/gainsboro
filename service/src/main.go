@@ -1,14 +1,14 @@
 package main
 
 import (
+	"common"
 	"flag"
 	"handler"
 	"net/http"
 )
 
 const (
-	lwx    = "/wx"
-	kcolon = ":"
+	lwx = "/wx"
 )
 
 var (
@@ -20,5 +20,5 @@ func main() {
 	flag.Parse()
 
 	http.HandleFunc(lwx, handler.WxHandler)
-	http.ListenAndServe(kcolon+port, nil)
+	http.ListenAndServe(common.KColon+port, nil)
 }
