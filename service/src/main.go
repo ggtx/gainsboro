@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	lwx = "/wx"
+	lwx      = "/wx"
+	lcontent = "/wx/content"
 )
 
 var (
@@ -21,5 +22,6 @@ func main() {
 	common.Log.Info("[server] listen at port %s", port)
 
 	http.HandleFunc(lwx, handler.WxHandler)
+	http.HandleFunc(lcontent, handler.ContentHandler)
 	http.ListenAndServe(common.KColon+port, nil)
 }

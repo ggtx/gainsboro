@@ -4,25 +4,9 @@ import (
 	"bytes"
 	"common"
 	"github.com/PuerkitoBio/goquery"
-	//"os"
 )
 
 func GetQueryResponse(cat string) string {
-	/*
-		f, err := os.Open("claws/first.html")
-		if err != nil {
-			common.Log.Error("[GetQueryResponse] open file err:%v", err)
-			return ""
-		}
-
-		defer f.Close()
-		doc, err := goquery.NewDocumentFromReader(f)
-		if err != nil {
-			common.Log.Error("[GetQueryResponse] make doc fail, err:%s", err.Error())
-			return ""
-		}
-	*/
-
 	doc, err := goquery.NewDocument("https://www.douban.com/group/blabla/discussion?start=0")
 	if err != nil {
 		common.Log.Error("[GetQueryResponse] make doc fail, err:%s", err.Error())
@@ -30,6 +14,7 @@ func GetQueryResponse(cat string) string {
 	}
 
 	var buf bytes.Buffer
+	buf.WriteString("<html>\n<body>")
 	doc.Find("tr").Each(func(i int, s *goquery.Selection) {
 		h, err := s.Html()
 		if err != nil {
@@ -39,6 +24,7 @@ func GetQueryResponse(cat string) string {
 		buf.WriteString(h)
 		buf.WriteString("</br>")
 	})
+	buf.WriteString("</body>\n</html>")
 
 	return buf.String()
 }
