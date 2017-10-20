@@ -5,10 +5,16 @@ import (
 	"encoding/xml"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 type UserMsg struct {
-	ToUserName string `xml:"ToUserName"`
+	ToUserName   string `xml:"ToUserName"`
+	FromUserName string `xml:"FromUserName"`
+	CreateTime   int64  `xml:"CreateTime"`
+	MsgType      string `xml:"MsgType"`
+	Content      string `xml:"Content"`
+	MsgId        string `xml:"MsgId"`
 }
 
 func WxHandler(w http.ResponseWriter, r *http.Request) {
@@ -40,6 +46,19 @@ func WxHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		common.Log.Debug("request:%v", req)
+		resp := &UserMsg{
+			FromUserName: "gh_283616b98eee",
+			ToUserName:   req.ToUserName,
+			CreateTime:   time.Now().Unix(),
+			MsgType:      req.MsgType,
+			Content:      "I am working!",
+		}
+		bresp, err := xml.Marshal(resp)
+		if err != nil {
+			common.Log.Debug("marshal resp err:%v", err)
+			return
+		}
+		w.Write(bresp)
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
