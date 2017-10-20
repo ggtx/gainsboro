@@ -17,6 +17,19 @@ type UserMsg struct {
 	MsgId        string `xml:"MsgId"`
 }
 
+type RespMsg struct {
+	xmldata *xmlRespMsg `xml:"xml"`
+}
+
+type xmlRespMsg struct {
+	ToUserName   string `xml:"cdata,ToUserName"`
+	FromUserName string `xml:"cdata,FromUserName"`
+	CreateTime   int64  `xml:"cdata,CreateTime"`
+	MsgType      string `xml:"cdata,MsgType"`
+	Content      string `xml:"cdata,Content"`
+	MsgId        string `xml:"cdata,MsgId"`
+}
+
 func WxHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		_req := r.URL.Query()
@@ -46,12 +59,14 @@ func WxHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		common.Log.Debug("request:%v", req)
-		resp := &UserMsg{
-			FromUserName: "gh_283616b98eee",
-			ToUserName:   req.ToUserName,
-			CreateTime:   time.Now().Unix(),
-			MsgType:      req.MsgType,
-			Content:      "I am working!",
+		resp := &RespMsg{
+			xmldata: &xmlRespMsg{
+				FromUserName: "gh_283616b98eee",
+				ToUserName:   req.ToUserName,
+				CreateTime:   time.Now().Unix(),
+				MsgType:      req.MsgType,
+				Content:      "I am working!",
+			},
 		}
 		bresp, err := xml.Marshal(resp)
 		if err != nil {
