@@ -2,9 +2,10 @@ package handler
 
 import (
 	"common"
-	"encoding/xml"
+	x "encoding/xml"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -17,17 +18,36 @@ type UserMsg struct {
 	MsgId        string `xml:"MsgId"`
 }
 
-type RespMsg struct {
-	xmldata *xmlRespMsg `xml:"xml"`
+type Resp struct {
+	RespXml *xml
 }
 
-type xmlRespMsg struct {
-	ToUserName   string `xml:"cdata,ToUserName"`
-	FromUserName string `xml:"cdata,FromUserName"`
-	CreateTime   int64  `xml:"cdata,CreateTime"`
-	MsgType      string `xml:"cdata,MsgType"`
-	Content      string `xml:"cdata,Content"`
-	MsgId        string `xml:"cdata,MsgId"`
+type xml struct {
+	ToUserName   *ToUserNameS
+	FromUserName *FromUserNameS
+	CreateTime   int64
+	MsgType      *MsgTypeS
+	Content      *ContentS
+}
+
+type ToUserNameS struct {
+	UserName string `xml:",cdata"`
+}
+
+type FromUserNameS struct {
+	UserName string `xml:",cdata"`
+}
+
+type MsgTypeS struct {
+	MType string `xml:",cdata"`
+}
+
+type ContentS struct {
+	Data string `xml:",cdata"`
+}
+
+type MsgIdS struct {
+	Id string `xml:",cdata"`
 }
 
 func WxHandler(w http.ResponseWriter, r *http.Request) {
@@ -50,29 +70,32 @@ func WxHandler(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
-		common.Log.Debug("body:%v", string(body))
+		common.Log.Debug("request:%+v", r)
 		req := &UserMsg{}
-		err = xml.Unmarshal(body, req)
+		err = x.Unmarshal(body, req)
 		if err != nil {
 			common.Log.Warn("unmarshal body err:%v", err)
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
 		common.Log.Debug("request:%v", req)
-		resp := &RespMsg{
-			xmldata: &xmlRespMsg{
-				FromUserName: "gh_283616b98eee",
-				ToUserName:   req.ToUserName,
+		resp := &Resp{
+			RespXml: &xml{
+				FromUserName: &FromUserNameS{UserName: "gh_283616b98eee"},
+				ToUserName:   &ToUserNameS{UserName: req.FromUserName},
 				CreateTime:   time.Now().Unix(),
-				MsgType:      req.MsgType,
-				Content:      "I am working!",
+				MsgType:      &MsgTypeS{MType: req.MsgType},
+				Content:      &ContentS{Data: "I am working!"},
 			},
 		}
-		bresp, err := xml.Marshal(resp)
+		bresp, err := x.Marshal(resp.RespXml)
 		if err != nil {
 			common.Log.Debug("marshal resp err:%v", err)
 			return
 		}
+		common.Log.Debug("resp:%s", bresp)
+		w.Header().Set("Content-Type", "text/xml")
+		w.Header().Set("Content-Length", strconv.Itoa(len(bresp)))
 		w.Write(bresp)
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
